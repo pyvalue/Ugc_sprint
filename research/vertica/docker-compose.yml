@@ -1,0 +1,8 @@
+version: '3.10'
+
+services:
+  vertica:
+    image: jbfavre/vertica:latest
+    restart: always
+    ports:
+      - "5433:5433"

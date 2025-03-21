@@ -1,0 +1,44 @@
+@startuml
+skinparam componentStyle uml2
+actor Client
+component "AdminPanel"
+component "Kafka"
+component "ClickHouse"
+
+rectangle AuthService #line:green{
+database RedisAuth
+component "Сервис Auth" as Auth
+database PostgresAuth
+}
+
+rectangle AsyncService  #line:orange{
+component "AsyncAPI" as Async
+database RedisAsync
+}
+
+rectangle ETL #line:blue{
+component "ETLService"
+database RedisETL
+database ElasticSearch
+database Postgres
+}
+
+Auth --> PostgresAuth: "Сохранение клиента в базу"
+Client -> Auth: "Регистрация клиента / \nАутентификация"
+Auth -> RedisAuth: "Черный список\nRefresh токенов"
+Auth -> Client: "Access и Refresh токены"
+Postgres <-[#orange] AdminPanel: "Загрузка контента в базу"
+
+Client --> "Kafka": "Сбор событий клиента"
+Kafka --> Async: "Запрос контента"
+Kafka --> "ClickHouse": "Сбор аналитики"
+Client <-- Async: "Получение контента"
+Async -> Auth: "Проверка токена"
+Async --> RedisAsync: "Кеширование запросов"
+Async --> ElasticSearch: "Запрос данных"
+
+Postgres <-- ETLService: "Запрос новых / обновлённых данных"
+RedisETL <-- ETLService : "Сохранение состояния"
+ETLService --> ElasticSearch: "Загрузка новых / обновлённых данных"
+
+@enduml0

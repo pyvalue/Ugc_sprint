@@ -1,0 +1,16 @@
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /var/log/nginx/*
+  json:
+    keys_under_root: true
+    add_error_key: true
+
+processors:
+  - decode_json_fields:
+      fields: ["inner"]
+
+output.logstash:
+  enabled: true
+  hosts: ["elk-logstash:5045"]
